@@ -1,0 +1,6 @@
+<RCC>
+    <qresource prefix="/icons">
+        <file alias="collapsed.png">resources/icons/collapsed.png</file>
+        <file alias="expanded.png">resources/icons/expanded.png</file>
+    </qresource>
+</RCC>

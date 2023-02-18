@@ -18,6 +18,7 @@ set(PROJECT_SOURCES
         mainwindow.cpp
         menuwidget.h
         menuwidget.cpp
+        resources.qrc
 )
 
 if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)

@@ -1,65 +1,42 @@
-#include <QtWidgets>
+#include <QLabel>
+#include <QVBoxLayout>
 
-class TreeExpander : public QWidget {
+class QStackedWidget;
+class QHBoxLayout;
+class QString;
+class QSize;
+class QPixmap;
+
+class TreeExpander : public QLabel {
   Q_OBJECT
-public:
+ public:
+  TreeExpander(QPixmap expanded, QPixmap collapsed) : m_expandedPixmap(expanded), m_collapsedPixmap(collapsed) { setPixmap(collapsed); }
+
   void setExpanded(bool expanded) {
     m_expanded = expanded;
-    repaint();
+    setPixmap(m_expanded ? m_expandedPixmap : m_collapsedPixmap);
   }
 
-signals:
+ signals:
   void mouseEnter();
   void mouseLeave();
 
-protected:
-  void paintEvent(QPaintEvent *event) override {
-    QStyleOption opt;
-    opt.initFrom(this);
+ protected:
+  void enterEvent(QEnterEvent* event) override { emit mouseEnter(); }
+  void leaveEvent(QEvent* event) override { emit mouseLeave(); }
 
-    QPainter painter(this);
-    drawTreeExpander(&painter, &opt);
-  }
-
-  void enterEvent(QEnterEvent *event) override { emit mouseEnter(); }
-  void leaveEvent(QEvent *event) override { emit mouseLeave(); }
-
-private:
-  void drawTreeExpander(QPainter *painter, const QStyleOption *option) {
-    painter->setPen(QPen(option->palette.color(QPalette::ButtonText), 1,
-                         Qt::SolidLine, Qt::RoundCap, Qt::MiterJoin));
-    painter->setRenderHint(QPainter::Antialiasing, true);
-
-    int padding = option->rect.width() / 4;
-    int wHalf = option->rect.width() / 2;
-    int hHalf = option->rect.height() / 2;
-    int wPadded = option->rect.width() - padding;
-    int hPadded = option->rect.height() - padding;
-
-    QPoint p1, p2, p3;
-    if (!m_expanded) {
-      p1 = QPoint(wHalf, padding);
-      p2 = QPoint(wPadded, hHalf);
-      p3 = QPoint(wHalf, hPadded);
-    } else {
-      p1 = QPoint(padding, hHalf);
-      p2 = QPoint(wHalf, hPadded);
-      p3 = QPoint(wPadded, hHalf);
-    }
-    painter->drawLine(p1, p2);
-    painter->drawLine(p2, p3);
-  }
-
+ private:
+  QPixmap m_expandedPixmap;
+  QPixmap m_collapsedPixmap;
   bool m_expanded = false;
 };
 
 class MenuItem : public QWidget {
   Q_OBJECT
-public:
-  MenuItem(const QString &text, const QIcon &icon,
-           MenuItem *parentItem = nullptr, QWidget *parent = nullptr);
+ public:
+  MenuItem(const QString& text, const QIcon& icon, MenuItem* parentItem = nullptr, QWidget* parent = nullptr);
 
-  void addChild(MenuItem *child) {
+  void addChild(MenuItem* child) {
     m_children.append(child);
     if (!m_expanded) {
       child->hide();
@@ -69,24 +46,24 @@ public:
 
   QSize sizeHint() const override { return QSize(100, 25); }
 
-signals:
+ signals:
   void itemClicked();
 
-protected:
-  void mousePressEvent(QMouseEvent *event) override;
-  void leaveEvent(QEvent *event) override;
-  void enterEvent(QEnterEvent *event) override;
+ protected:
+  void mousePressEvent(QMouseEvent* event) override;
+  void leaveEvent(QEvent* event) override;
+  void enterEvent(QEnterEvent* event) override;
 
-private:
+ private:
   void expand();
   void collapse();
 
-  QLabel *m_pLeftIcon;
-  QLabel *m_pTextLabel;
-  TreeExpander *m_pTreeExpander;
+  QLabel* m_pIcon;
+  QLabel* m_pTextLabel;
+  TreeExpander* m_pTreeExpander;
 
-  MenuItem *m_pParent;
-  QList<MenuItem *> m_children;
+  MenuItem* m_pParent;
+  QList<MenuItem*> m_children;
 
   bool m_expanded;
   bool m_mouseOverExpander;
@@ -95,17 +72,16 @@ private:
 class MenuWidget : public QWidget {
   Q_OBJECT
 
-public:
-  explicit MenuWidget(QWidget *parent = nullptr);
+ public:
+  explicit MenuWidget(QWidget* parent = nullptr);
 
-  MenuItem *addItem(const QString &text, const QIcon &icon = QIcon(),
-                    QWidget *widget = nullptr, MenuItem *parent = nullptr);
+  MenuItem* addItem(const QString& text, const QIcon& icon = QIcon(), QWidget* widget = nullptr, MenuItem* parent = nullptr);
 
   void addStretch() { m_pButtonLayout->addStretch(); }
 
-private:
-  QStackedWidget *m_pContents;
-  QHBoxLayout *m_pMainLayout;
-  QVBoxLayout *m_pButtonLayout;
-  QMap<MenuItem *, int> m_menuIndices;
+ private:
+  QStackedWidget* m_pContents;
+  QHBoxLayout* m_pMainLayout;
+  QVBoxLayout* m_pButtonLayout;
+  QMap<MenuItem*, QWidget*> m_menuWidgets;
 };
